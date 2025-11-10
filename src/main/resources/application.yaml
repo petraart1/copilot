@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: copilot
+
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+
+langchain4j:
+  open-ai:
+    api-key: ${API_KEY}
+    base-url: ${BASE_URL}
+    model: ${MODEL}
+    temperature: ${TEMPERATURE}
+

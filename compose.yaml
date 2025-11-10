@@ -1,0 +1,16 @@
+services:
+  copilot:
+    container_name: copilot
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    environment:
+      API_KEY: ${API_KEY}
+      BASE_URL: ${BASE_URL}
+      MODEL: ${MODEL}
+      TEMPERATURE: ${TEMPERATURE}
+
+    ports:
+      - "8080:8080"
