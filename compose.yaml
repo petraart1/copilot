@@ -60,6 +60,8 @@ services:
       REDIS_PORT: ${REDIS_PORT}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
 
+      JITSI_BASE_URL: ${JITSI_BASE_URL}
+
     ports:
       - "8080:8080"
   calendar:
