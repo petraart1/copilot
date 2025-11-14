@@ -28,7 +28,7 @@ public class LLMConfig {
                 .baseUrl(baseUrl)
                 .modelName(modelName)
                 .temperature(temperature)
-                .maxTokens(2048)
+                .maxTokens(1500)
                 .logRequests(true)
                 .logResponses(true)
                 .build();

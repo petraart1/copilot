@@ -1,4 +1,25 @@
 services:
+  db:
+    container_name: db
+    image: 'postgres:16-alpine'
+
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - db_data:/var/lib/postgresql/data:rw
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
   copilot:
     container_name: copilot
 
@@ -6,11 +27,82 @@ services:
       context: .
       dockerfile: Dockerfile
 
+    depends_on:
+      - db
+      - redis
+      - calendar
+
     environment:
+      DB_NAME: ${DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_PORT: ${DB_PORT}
+      DB_HOST: ${DB_HOST}
+
+      JWT_SECRET: ${JWT_SECRET}
       API_KEY: ${API_KEY}
       BASE_URL: ${BASE_URL}
       MODEL: ${MODEL}
       TEMPERATURE: ${TEMPERATURE}
 
+      MAILSLURP_API_KEY: ${MAILSLURP_API_KEY}
+
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH}
+      MAIL_SMTP_STARTTLS: ${MAIL_SMTP_STARTTLS}
+
+      CALDAV_BASE_URL: ${CALDAV_BASE_URL}
+
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
     ports:
       - "8080:8080"
+  calendar:
+    image: tomsquest/docker-radicale:latest
+    container_name: calendar
+    ports:
+      - "5232:5232"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5232"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    environment:
+      RADICALE_CONFIG: |
+        [server]
+        hosts = 0.0.0.0:5232
+
+        [auth]
+        type = htpasswd
+        htpasswd_filename = /data/users
+        htpasswd_encryption = md5
+
+        [storage]
+        type = filesystem
+        filesystem_folder = /data/collections
+    volumes:
+      - calendar_data:/data
+
+  redis:
+    container_name: redis
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  db_data:
+  calendar_data:
+  redis_data:
